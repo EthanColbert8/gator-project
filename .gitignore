@@ -1,3 +1,6 @@
+# Private stuff
+clean_database.sh
+
 # Executables
 gator-project
 
