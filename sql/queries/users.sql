@@ -6,5 +6,9 @@ INSERT INTO users (id, created_at, updated_at, name)
 SELECT * FROM users
     WHERE name = $1;
 
+-- name: GetUsers :many
+SELECT * FROM users
+    ORDER BY lower(name) ASC;
+
 -- name: ResetUsers :exec
 DELETE FROM users;

@@ -52,6 +52,30 @@ func HandlerRegister(s *State, cmd Command) error {
 	return nil
 }
 
+func HandlerGetUsers(s *State, cmd Command) error {
+	if len(cmd.Args) != 0 {
+		return fmt.Errorf("got %d args, expected 0 for command users", len(cmd.Args))
+	}
+
+	users, err := s.Db.GetUsers(context.Background())
+	if err != nil {
+		return fmt.Errorf("error retrieving users: %w", err)
+	}
+
+	var toPrint string
+	for _, user := range users {
+		if user.Name == s.Cfg.CurrentUsername {
+			toPrint = fmt.Sprintf("* %s (current)", user.Name)
+		} else {
+			toPrint = fmt.Sprintf("* %s", user.Name)
+		}
+
+		fmt.Println(toPrint)
+	}
+
+	return nil
+}
+
 func HandlerResetUsers(s *State, cmd Command) error {
 	if len(cmd.Args) != 0 {
 		return fmt.Errorf("got %d args, expected 0 for command reset", len(cmd.Args))
