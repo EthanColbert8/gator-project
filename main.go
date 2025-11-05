@@ -32,6 +32,7 @@ func main() {
 	commands := &utils.Commands{}
 	commands.Register("login", utils.HandlerLogin)
 	commands.Register("register", utils.HandlerRegister)
+	commands.Register("reset", utils.HandlerResetUsers)
 
 	args := os.Args[1:]
 	if len(args) < 1 {

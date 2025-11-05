@@ -51,3 +51,16 @@ func HandlerRegister(s *State, cmd Command) error {
 	fmt.Printf("\nUser Details:\nID: %s\nCreated At: %s\nUpdated At: %s\n\n", newUser.ID, newUser.CreatedAt, newUser.UpdatedAt)
 	return nil
 }
+
+func HandlerResetUsers(s *State, cmd Command) error {
+	if len(cmd.Args) != 0 {
+		return fmt.Errorf("got %d args, expected 0 for command reset", len(cmd.Args))
+	}
+
+	err := s.Db.ResetUsers(context.Background())
+	if err != nil {
+		return fmt.Errorf("error resetting users table: %w", err)
+	}
+
+	return nil
+}
