@@ -88,3 +88,15 @@ func HandlerResetUsers(s *State, cmd Command) error {
 
 	return nil
 }
+
+func HandlerAggregate(s *State, cmd Command) error {
+	const feedUrl = "https://www.wagslane.dev/index.xml"
+	feed, err := FetchFeed(context.Background(), feedUrl)
+	if err != nil {
+		return fmt.Errorf("error fetching feed: %w", err)
+	}
+
+	fmt.Println(feed)
+
+	return nil
+}
