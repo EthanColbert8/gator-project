@@ -135,3 +135,20 @@ func HandlerAddFeed(s *State, cmd Command) error {
 	fmt.Printf("Feed '%s' added for user '%s'.\n", feedName, currentUser.Name)
 	return nil
 }
+
+func HandlerListAllFeeds(s *State, cmd Command) error {
+	if len(cmd.Args) != 0 {
+		return fmt.Errorf("got %d args, expected 0 for command feeds", len(cmd.Args))
+	}
+
+	feeds, err := s.Db.ListFeeds(context.Background())
+	if err != nil {
+		return fmt.Errorf("error fetching feeds: %w", err)
+	}
+
+	for _, feed := range feeds {
+		fmt.Printf("* %s (%s) by %s\n", feed.Name.String, feed.Url, feed.UserName)
+	}
+
+	return nil
+}
