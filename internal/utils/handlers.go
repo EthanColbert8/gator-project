@@ -2,6 +2,7 @@ package utils
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"time"
 
@@ -90,6 +91,10 @@ func HandlerResetUsers(s *State, cmd Command) error {
 }
 
 func HandlerAggregate(s *State, cmd Command) error {
+	if len(cmd.Args) != 0 {
+		return fmt.Errorf("got %d args, expected 0 for command agg", len(cmd.Args))
+	}
+
 	const feedUrl = "https://www.wagslane.dev/index.xml"
 	feed, err := FetchFeed(context.Background(), feedUrl)
 	if err != nil {
@@ -97,6 +102,36 @@ func HandlerAggregate(s *State, cmd Command) error {
 	}
 
 	fmt.Println(feed)
+	return nil
+}
 
+func HandlerAddFeed(s *State, cmd Command) error {
+	if len(cmd.Args) != 2 {
+		return fmt.Errorf("got %d args, expected 2 for command addfeed", len(cmd.Args))
+	}
+
+	feedName := cmd.Args[0]
+	feedUrl := cmd.Args[1]
+
+	currentUser, err := s.Db.GetUser(context.Background(), s.Cfg.CurrentUsername)
+	if err != nil {
+		return fmt.Errorf("error retrieving current user: %w", err)
+	}
+
+	feedParams := database.CreateFeedParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		Name:      sql.NullString{String: feedName, Valid: true},
+		Url:       feedUrl,
+		UserID:    currentUser.ID,
+	}
+
+	_, err = s.Db.CreateFeed(context.Background(), feedParams)
+	if err != nil {
+		return fmt.Errorf("error adding feed: %w", err)
+	}
+
+	fmt.Printf("Feed '%s' added for user '%s'.\n", feedName, currentUser.Name)
 	return nil
 }

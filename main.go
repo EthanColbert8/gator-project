@@ -35,6 +35,7 @@ func main() {
 	commands.Register("users", utils.HandlerGetUsers)
 	commands.Register("reset", utils.HandlerResetUsers)
 	commands.Register("agg", utils.HandlerAggregate)
+	commands.Register("addfeed", utils.HandlerAddFeed)
 
 	args := os.Args[1:]
 	if len(args) < 1 {
