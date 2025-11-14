@@ -11,11 +11,12 @@ import (
 )
 
 func HandlerLogin(s *State, cmd Command) error {
-	if len(cmd.Args) != 1 {
-		return fmt.Errorf("got %d args, expected 1 for command login", len(cmd.Args))
+	err := validateNumArgs(cmd, 1)
+	if err != nil {
+		return err
 	}
 
-	_, err := s.Db.GetUser(context.Background(), cmd.Args[0])
+	_, err = s.Db.GetUser(context.Background(), cmd.Args[0])
 	if err != nil {
 		return fmt.Errorf("error retrieving user: %w", err)
 	}
@@ -30,8 +31,9 @@ func HandlerLogin(s *State, cmd Command) error {
 }
 
 func HandlerRegister(s *State, cmd Command) error {
-	if len(cmd.Args) != 1 {
-		return fmt.Errorf("got %d args, expected 1 for command register", len(cmd.Args))
+	err := validateNumArgs(cmd, 1)
+	if err != nil {
+		return err
 	}
 
 	userParams := database.CreateUserParams{
@@ -54,8 +56,9 @@ func HandlerRegister(s *State, cmd Command) error {
 }
 
 func HandlerGetUsers(s *State, cmd Command) error {
-	if len(cmd.Args) != 0 {
-		return fmt.Errorf("got %d args, expected 0 for command users", len(cmd.Args))
+	err := validateNumArgs(cmd, 0)
+	if err != nil {
+		return err
 	}
 
 	users, err := s.Db.GetUsers(context.Background())
@@ -78,11 +81,12 @@ func HandlerGetUsers(s *State, cmd Command) error {
 }
 
 func HandlerResetUsers(s *State, cmd Command) error {
-	if len(cmd.Args) != 0 {
-		return fmt.Errorf("got %d args, expected 0 for command reset", len(cmd.Args))
+	err := validateNumArgs(cmd, 0)
+	if err != nil {
+		return err
 	}
 
-	err := s.Db.ResetUsers(context.Background())
+	err = s.Db.ResetUsers(context.Background())
 	if err != nil {
 		return fmt.Errorf("error resetting users table: %w", err)
 	}
@@ -91,8 +95,9 @@ func HandlerResetUsers(s *State, cmd Command) error {
 }
 
 func HandlerAggregate(s *State, cmd Command) error {
-	if len(cmd.Args) != 0 {
-		return fmt.Errorf("got %d args, expected 0 for command agg", len(cmd.Args))
+	err := validateNumArgs(cmd, 0)
+	if err != nil {
+		return err
 	}
 
 	const feedUrl = "https://www.wagslane.dev/index.xml"
@@ -106,8 +111,9 @@ func HandlerAggregate(s *State, cmd Command) error {
 }
 
 func HandlerAddFeed(s *State, cmd Command) error {
-	if len(cmd.Args) != 2 {
-		return fmt.Errorf("got %d args, expected 2 for command addfeed", len(cmd.Args))
+	err := validateNumArgs(cmd, 2)
+	if err != nil {
+		return err
 	}
 
 	feedName := cmd.Args[0]
@@ -133,12 +139,19 @@ func HandlerAddFeed(s *State, cmd Command) error {
 	}
 
 	fmt.Printf("Feed '%s' added for user '%s'.\n", feedName, currentUser.Name)
+
+	_, err = FollowFeed(s.Db, s.Cfg.CurrentUsername, feedUrl)
+	if err != nil {
+		return fmt.Errorf("error following feed after adding: %w", err)
+	}
+
 	return nil
 }
 
 func HandlerListAllFeeds(s *State, cmd Command) error {
-	if len(cmd.Args) != 0 {
-		return fmt.Errorf("got %d args, expected 0 for command feeds", len(cmd.Args))
+	err := validateNumArgs(cmd, 0)
+	if err != nil {
+		return err
 	}
 
 	feeds, err := s.Db.ListFeeds(context.Background())
@@ -154,8 +167,9 @@ func HandlerListAllFeeds(s *State, cmd Command) error {
 }
 
 func HandlerFollowFeed(s *State, cmd Command) error {
-	if len(cmd.Args) != 1 {
-		return fmt.Errorf("got %d args, expected 1 for command follow", len(cmd.Args))
+	err := validateNumArgs(cmd, 1)
+	if err != nil {
+		return err
 	}
 
 	returnedRow, err := FollowFeed(s.Db, s.Cfg.CurrentUsername, cmd.Args[0])
@@ -167,5 +181,25 @@ func HandlerFollowFeed(s *State, cmd Command) error {
 	feedName := returnedRow.FeedName.String
 
 	fmt.Printf("User \"%s\" is now following feed \"%s\".\n", userName, feedName)
+	return nil
+}
+
+func HandlerGetFeedsForUser(s *State, cmd Command) error {
+	err := validateNumArgs(cmd, 0)
+	if err != nil {
+		return err
+	}
+
+	feedFollows, err := s.Db.GetFeedFollowsForUser(context.Background(), s.Cfg.CurrentUsername)
+	if err != nil {
+		return fmt.Errorf("error fetching followed feeds: %w", err)
+	}
+
+	fmt.Printf("Feeds followed by %s:\n", s.Cfg.CurrentUsername)
+
+	for _, follow := range feedFollows {
+		fmt.Printf("* %s (%s)\n", follow.FeedName.String, follow.FeedUrl)
+	}
+
 	return nil
 }

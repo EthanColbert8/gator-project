@@ -9,6 +9,13 @@ import (
 	"github.com/google/uuid"
 )
 
+func validateNumArgs(cmd Command, numArgs int) error {
+	if len(cmd.Args) != numArgs {
+		return fmt.Errorf("got %d args, expected %d for command %s", len(cmd.Args), numArgs, cmd.Name)
+	}
+	return nil
+}
+
 func FollowFeed(db *database.Queries, username, url string) (database.CreateFeedFollowRow, error) {
 	user, err := db.GetUser(context.Background(), username)
 	if err != nil {
