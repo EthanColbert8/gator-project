@@ -152,3 +152,20 @@ func HandlerListAllFeeds(s *State, cmd Command) error {
 
 	return nil
 }
+
+func HandlerFollowFeed(s *State, cmd Command) error {
+	if len(cmd.Args) != 1 {
+		return fmt.Errorf("got %d args, expected 1 for command follow", len(cmd.Args))
+	}
+
+	returnedRow, err := FollowFeed(s.Db, s.Cfg.CurrentUsername, cmd.Args[0])
+	if err != nil {
+		return fmt.Errorf("error following feed: %w", err)
+	}
+
+	userName := returnedRow.UserName
+	feedName := returnedRow.FeedName.String
+
+	fmt.Printf("User \"%s\" is now following feed \"%s\".\n", userName, feedName)
+	return nil
+}
