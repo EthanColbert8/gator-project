@@ -42,3 +42,14 @@ func FollowFeed(db *database.Queries, username, url string) (database.CreateFeed
 
 	return createdFeedFollowRow, nil
 }
+
+func MiddlewareLoggedIn(handler func(s *State, cmd Command, user database.User) error) func(s *State, cmd Command) error {
+	return func(s *State, cmd Command) error {
+		currentUser, err := s.Db.GetUser(context.Background(), s.Cfg.CurrentUsername)
+		if err != nil {
+			return fmt.Errorf("error retrieving current user: %w", err)
+		}
+
+		return handler(s, cmd, currentUser)
+	}
+}

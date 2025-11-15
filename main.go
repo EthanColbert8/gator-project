@@ -30,12 +30,12 @@ func main() {
 	state.Db = dbQueries
 
 	commands := &utils.Commands{}
-	commands.Register("login", utils.HandlerLogin)
+	commands.Register("login", utils.MiddlewareLoggedIn(utils.HandlerLogin))
 	commands.Register("register", utils.HandlerRegister)
 	commands.Register("users", utils.HandlerGetUsers)
 	commands.Register("reset", utils.HandlerResetUsers)
 	commands.Register("agg", utils.HandlerAggregate)
-	commands.Register("addfeed", utils.HandlerAddFeed)
+	commands.Register("addfeed", utils.MiddlewareLoggedIn(utils.HandlerAddFeed))
 	commands.Register("feeds", utils.HandlerListAllFeeds)
 	commands.Register("follow", utils.HandlerFollowFeed)
 	commands.Register("following", utils.HandlerGetFeedsForUser)

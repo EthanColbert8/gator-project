@@ -10,16 +10,16 @@ import (
 	"github.com/google/uuid"
 )
 
-func HandlerLogin(s *State, cmd Command) error {
+func HandlerLogin(s *State, cmd Command, user database.User) error {
 	err := validateNumArgs(cmd, 1)
 	if err != nil {
 		return err
 	}
 
-	_, err = s.Db.GetUser(context.Background(), cmd.Args[0])
-	if err != nil {
-		return fmt.Errorf("error retrieving user: %w", err)
-	}
+	// _, err = s.Db.GetUser(context.Background(), cmd.Args[0])
+	// if err != nil {
+	// 	return fmt.Errorf("error retrieving user: %w", err)
+	// }
 
 	err = s.Cfg.SetUser(cmd.Args[0])
 	if err != nil {
@@ -110,7 +110,7 @@ func HandlerAggregate(s *State, cmd Command) error {
 	return nil
 }
 
-func HandlerAddFeed(s *State, cmd Command) error {
+func HandlerAddFeed(s *State, cmd Command, user database.User) error {
 	err := validateNumArgs(cmd, 2)
 	if err != nil {
 		return err
@@ -119,10 +119,10 @@ func HandlerAddFeed(s *State, cmd Command) error {
 	feedName := cmd.Args[0]
 	feedUrl := cmd.Args[1]
 
-	currentUser, err := s.Db.GetUser(context.Background(), s.Cfg.CurrentUsername)
-	if err != nil {
-		return fmt.Errorf("error retrieving current user: %w", err)
-	}
+	// currentUser, err := s.Db.GetUser(context.Background(), s.Cfg.CurrentUsername)
+	// if err != nil {
+	// 	return fmt.Errorf("error retrieving current user: %w", err)
+	// }
 
 	feedParams := database.CreateFeedParams{
 		ID:        uuid.New(),
@@ -130,7 +130,7 @@ func HandlerAddFeed(s *State, cmd Command) error {
 		UpdatedAt: time.Now(),
 		Name:      sql.NullString{String: feedName, Valid: true},
 		Url:       feedUrl,
-		UserID:    currentUser.ID,
+		UserID:    user.ID,
 	}
 
 	_, err = s.Db.CreateFeed(context.Background(), feedParams)
@@ -138,7 +138,7 @@ func HandlerAddFeed(s *State, cmd Command) error {
 		return fmt.Errorf("error adding feed: %w", err)
 	}
 
-	fmt.Printf("Feed '%s' added for user '%s'.\n", feedName, currentUser.Name)
+	fmt.Printf("Feed '%s' added for user '%s'.\n", feedName, user.Name)
 
 	_, err = FollowFeed(s.Db, s.Cfg.CurrentUsername, feedUrl)
 	if err != nil {
