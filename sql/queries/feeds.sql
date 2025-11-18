@@ -10,3 +10,8 @@ SELECT * FROM feeds
 SELECT feeds.name, feeds.url, users.name AS user_name FROM feeds
     JOIN users ON feeds.user_id = users.id
     ORDER BY feeds.created_at DESC;
+
+-- name: MarkFeedFetched :exec
+UPDATE feeds
+    SET last_fetched_at = $2, updated_at = $3
+    WHERE id = $1;
