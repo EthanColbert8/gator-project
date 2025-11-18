@@ -203,3 +203,27 @@ func HandlerGetFeedsForUser(s *State, cmd Command) error {
 
 	return nil
 }
+
+func HandlerUnfollowFeed(s *State, cmd Command, user database.User) error {
+	err := validateNumArgs(cmd, 1)
+	if err != nil {
+		return err
+	}
+
+	feed, err := s.Db.GetFeed(context.Background(), cmd.Args[0])
+	if err != nil {
+		return fmt.Errorf("error retrieving feed: %w", err)
+	}
+
+	unfollowParams := database.DeleteFeedFollowParams{
+		UserID: user.ID,
+		FeedID: feed.ID,
+	}
+
+	err = s.Db.DeleteFeedFollow(context.Background(), unfollowParams)
+	if err != nil {
+		return fmt.Errorf("error unfollowing feed: %w", err)
+	}
+
+	return nil
+}
